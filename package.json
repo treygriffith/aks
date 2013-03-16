@@ -1,0 +1,30 @@
+{
+  "name": "aks",
+  "description": "Authoritative PGP Key Server",
+  "version": "0.0.1",
+  "author": {
+    "name": "Trey Griffith",
+    "email": "trey.griffith@gmail.com"
+  },
+  "keywords": [
+    "pgp",
+    "OpenPGP",
+    "hkp",
+    "key server",
+    "authoritative",
+    "aks"
+  ],
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "main": "./index.js",
+  "engines": {
+    "node": "0.8.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/treygriffith/aks.git"
+  },
+  "homepage": "https://github.com/treygriffith/aks"
+}
