@@ -7,14 +7,14 @@ Installation
 ------------
 
 Through [NPM](http://www.npmjs.org)
-	``` bash
+```bash
 	$ npm install aks
-	```
+```
 
 or using Git
-	``` bash
+```bash
 	$ git clone git://github.com/treygriffith/aks	.git node_modules/aks/
-	```
+```
 
 Usage
 -----
@@ -23,7 +23,7 @@ Usage
 
 It takes as a parameter a database driver that implements the methods described in [Key Database Drivers](#key-database-drivers). It ships with a MongoDB driver (on top of Mongoose) as well as a Filesystem driver, meant only for local dev use, not as a production server.
 
-	``` javascript
+```javascript
 	var aks = require('aks');
 
 	var mongoUrl = 'mongodb://' + db.user + ':' + db.pass + '@' + db.host + ':' + db.port + '/' + db.name;
@@ -33,7 +33,7 @@ It takes as a parameter a database driver that implements the methods described 
 	var server = new aks.Server(mongoKeyDatabase);
 
 	server.listen(); // defaults to the typical HKP Port of 11371
-	```
+```
 
 Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API](#public-api).
 
@@ -64,11 +64,11 @@ HKP version 1 defined the index of the keys as all of the individual `keyid`'s. 
 
 HKP version 2 uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users/`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HKP protocol in use, in our case it is always `2`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
 
-	```
+```
 	GET http://keys.example.com/users/
-	```
+```
 could return
-	```
+```
 	{
 		"version": 2,
 		"keys": [
@@ -80,7 +80,7 @@ could return
 			}
 		]
 	}
-	```
+```
 
 HKP version 1 defined a variable, `mr` to designate whether a response should be machine-readable or human-readable. Since encryption is generally something better undertaken by machines than humans, HKP version 2 assumes all request to be machine-readable, but the responses are in formats (like JSON) that are also easily read by humans.
 
@@ -90,11 +90,11 @@ Each `key` can optionally contain additional properties describing the key, incl
 
 As might be expected from the `path`s returned from index, it is possible to retrieve all the users for a particular domain by using the domain as a the endpoint. The JSON object returned is the same as for the index route, but the paths do not include the domain as they are relative to the current endpoint.
 
-	```
+```
 	GET http://keys.example.com/users/example.com/
-	```
+```
 could return
-	```
+```
 	{
 		"version": 2,
 		"keys": [
@@ -106,16 +106,16 @@ could return
 			}
 		]
 	}
-	```
+```
 
 #### Retrieving a user's public key
 
 HKP version 1 relied on string searching to find the key id for a particular user, and then `GET`ing that key id to retrieve the Public Key Block. HKP version 2, by contrast does not support string searching, and instead returns the Public Key Block for a user (as defined by a unique email address) when sending a `GET` request to `/users/:domain/:user`. For example:
-	```
+```
 	GET http://keys.example.com/users/example.com/alice
-	```
+```
 could return
-	```
+```
 	-----BEGIN PGP PUBLIC KEY BLOCK-----
 	Version: GnuPG v1.0.1 (GNU/Linux)
 	Comment: For info see http://www.gnupg.org
@@ -141,7 +141,7 @@ could return
 	iLyPH1QAoI33Ft/0HBqLtqdtP4vWYQRbibjW
 	=BMEc
 	-----END PGP PUBLIC KEY BLOCK-----
-	```
+```
 
 ### Spam Concerns
 
