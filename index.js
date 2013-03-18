@@ -188,7 +188,7 @@ AKS.prototype.listen = function(port, host, callback) {
 	
 	args.unshift(port);
 
-	this.app.listen.apply(this.app, args);
+	return this.app.listen.apply(this.app, args);
 };
 
 /**
