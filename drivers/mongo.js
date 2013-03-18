@@ -12,7 +12,7 @@ mongooseTypes.loadTypes(mongoose, 'email');
  */
 function MongoKDb(url, collectionName) {
 
-	mongoose.connect(url);
+	this.mongoose = mongoose.connect(url);
 	
 	var key = mongoose.Schema({
 		uid: mongoose.SchemaTypes.Email,
@@ -72,25 +72,41 @@ MongoKDb.prototype.find = function(domain, callback) {
 MongoKDb.prototype.add = function(email, keytext, callback) {
 	var parts = email.split('@'),
 		user = parts[0],
-		domain = parts[1];
+		domain = parts[1],
+		Model = this.model;
 
-	var key = new this.model({
-		uid:email,
-		domain:domain,
-		user:user,
-		keytext:keytext
-	});
+	this.collection.findOne({uid:email}, function(err, key) {
 
-	key.save(function(err, key) {
 		if(err) {
 			callback(err);
 			return;
 		}
-		callback(null, {
-			uid: key.email,
-			keytext: key.keytext
+
+		if(!key) {
+			key = new Model({
+				uid:email,
+				domain:domain,
+				user:user
+			});
+		}
+
+		key.keytext = keytext;
+
+		key.save(function(err, key) {
+			if(err) {
+				callback(err);
+				return;
+			}
+			callback(null, {
+				uid: key.email,
+				user: user,
+				domain: domain,
+				keytext: key.keytext
+			});
 		});
+
 	});
+
 };
 
 
