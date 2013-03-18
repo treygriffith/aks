@@ -179,7 +179,7 @@ function AKS(db, options) {
 }
 
 AKS.prototype.listen = function(port, host, callback) {
-	if(parseInt(port,10).toString() === port) {
+	if(parseInt(port,10).toString() === port.toString()) {
 		args = Array.prototype.slice.call(arguments, 1);
 	} else {
 		port = 11371;
