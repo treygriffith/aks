@@ -8,12 +8,12 @@ Installation
 
 Through [NPM](http://www.npmjs.org)
 ```bash
-	$ npm install aks
+$ npm install aks
 ```
 
 or using Git
 ```bash
-	$ git clone git://github.com/treygriffith/aks	.git node_modules/aks/
+$ git clone git://github.com/treygriffith/aks	.git node_modules/aks/
 ```
 
 Usage
@@ -24,15 +24,15 @@ Usage
 It takes as a parameter a database driver that implements the methods described in [Key Database Drivers](#key-database-drivers). It ships with a MongoDB driver (on top of Mongoose) as well as a Filesystem driver, meant only for local dev use, not as a production server.
 
 ```javascript
-	var aks = require('aks');
+var aks = require('aks');
 
-	var mongoUrl = 'mongodb://' + db.user + ':' + db.pass + '@' + db.host + ':' + db.port + '/' + db.name;
+var mongoUrl = 'mongodb://' + db.user + ':' + db.pass + '@' + db.host + ':' + db.port + '/' + db.name;
 
-	var mongoKeyDatabase = new aks.drivers.Mongo(mongoUrl, 'keys'); // the storage mechanism for the keys is divorced from serving the keys themselves.
+var mongoKeyDatabase = new aks.drivers.Mongo(mongoUrl, 'keys'); // the storage mechanism for the keys is divorced from serving the keys themselves.
 
-	var server = new aks.Server(mongoKeyDatabase);
+var server = new aks.Server(mongoKeyDatabase);
 
-	server.listen(); // defaults to the typical HKP Port of 11371
+server.listen(); // defaults to the typical HKP Port of 11371
 ```
 
 Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API](#public-api).
@@ -65,21 +65,21 @@ HKP version 1 defined the index of the keys as all of the individual `keyid`'s. 
 HKP version 2 uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users/`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HKP protocol in use, in our case it is always `2`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
 
 ```
-	GET http://keys.example.com/users/
+GET http://keys.example.com/users/
 ```
 could return
 ```
-	{
-		"version": 2,
-		"keys": [
-			{
-				"path": "example.com/alice"
-			},
-			{
-				"path": "example.com/bob"
-			}
-		]
-	}
+{
+	"version": 2,
+	"keys": [
+		{
+			"path": "example.com/alice"
+		},
+		{
+			"path": "example.com/bob"
+		}
+	]
+}
 ```
 
 HKP version 1 defined a variable, `mr` to designate whether a response should be machine-readable or human-readable. Since encryption is generally something better undertaken by machines than humans, HKP version 2 assumes all request to be machine-readable, but the responses are in formats (like JSON) that are also easily read by humans.
@@ -91,56 +91,56 @@ Each `key` can optionally contain additional properties describing the key, incl
 As might be expected from the `path`s returned from index, it is possible to retrieve all the users for a particular domain by using the domain as a the endpoint. The JSON object returned is the same as for the index route, but the paths do not include the domain as they are relative to the current endpoint.
 
 ```
-	GET http://keys.example.com/users/example.com/
+GET http://keys.example.com/users/example.com/
 ```
 could return
 ```
-	{
-		"version": 2,
-		"keys": [
-			{
-				"path": "alice"
-			},
-			{
-				"path": "bob"
-			}
-		]
-	}
+{
+	"version": 2,
+	"keys": [
+		{
+			"path": "alice"
+		},
+		{
+			"path": "bob"
+		}
+	]
+}
 ```
 
 #### Retrieving a user's public key
 
 HKP version 1 relied on string searching to find the key id for a particular user, and then `GET`ing that key id to retrieve the Public Key Block. HKP version 2, by contrast does not support string searching, and instead returns the Public Key Block for a user (as defined by a unique email address) when sending a `GET` request to `/users/:domain/:user`. For example:
 ```
-	GET http://keys.example.com/users/example.com/alice
+GET http://keys.example.com/users/example.com/alice
 ```
 could return
 ```
-	-----BEGIN PGP PUBLIC KEY BLOCK-----
-	Version: GnuPG v1.0.1 (GNU/Linux)
-	Comment: For info see http://www.gnupg.org
-		
-	mQGiBDkHP3URBACkWGsYh43pkXU9wj/X1G67K8/DSrl85r7dNtHNfLL/ewil10k2
-	q8saWJn26QZPsDVqdUJMOdHfJ6kQTAt9NzQbgcVrxLYNfgeBsvkHF/POtnYcZRgL
-	tZ6syBBWs8JB4xt5V09iJSGAMPUQE8Jpdn2aRXPApdoDw179LM8Rq6r+gwCg5ZZa
-	pGNlkgFu24WM5wC1zg4QTbMD/3MJCSxfL99Ek5HXcB3yhj+o0LmIrGAVBgoWdrRd
-	BIGjQQFhV1NSwC8YhN/4nGHWpaTxgEtnb4CI1wI/G3DK9olYMyRJinkGJ6XYfP3b
-	cCQmqATDF5ugIAmdditnw7deXqn/eavaMxRXJM/RQSgJJyVpbAO2OqKe6L6Inb5H
-	kjcZA/9obTm499dDMRQ/CNR92fA5pr0zriy/ziLUow+cqI59nt+bEb9nY1mfmUN6
-	SW0jCH+pIQH5lerV+EookyOyq3ocUdjeRYF/d2jl9xmeSyL2H3tDvnuE6vgqFU/N
-	sdvby4B2Iku7S/h06W6GPQAe+pzdyX9vS+Pnf8osu7W3j60WprQkUGF1bCBHYWxs
-	YWdoZXIgPHBhdWxnYWxsQHJlZGhhdC5jb20+iFYEExECABYFAjkHP3UECwoEAwMV
-	AwIDFgIBAheAAAoJEJECmvGCPSWpMjQAoNF2zvRgdR/8or9pBhu95zeSnkb7AKCm
-	/uXVS0a5KoN7J61/1vEwx11poLkBQdQ5Bz+MEAQA8ztcWRJjW8cHCgLaE402jyqQ
-	37gDT/n4VS66nU+YItzDFScVmgMuFRzhibLblfO9TpZzxEbSF3T6p9hLLnHCQ1bD
-	HRsKfh0eJYMMqB3+HyUpNeqCMEEd9AnWD9P4rQtO7Pes38sV0lX0OSvsTyMG9wEB
-	vSNZk+Rl+phA55r1s8cAAwUEAJjqazvk0bgFrw1OPG9m7fEeDlvPSV6HSA0fvz4w
-	c7ckfpuxg/URQNf3TJA00Acprk8Gg8J2CtebAyR/sP5IsrK5l1luGdk+l0M85FpT
-	/cen2OdJtToAF/6fGnIkeCeP1O5aWTbDgdAUHBRykpdWU3GJ7NS6923fVg5khQWg
-	uwrAiEYEGBECAAYFAjkHP4wACgkQkQKa8YI9JamliwCfXox/HjlorMKnQRJkeBcZ
-	iLyPH1QAoI33Ft/0HBqLtqdtP4vWYQRbibjW
-	=BMEc
-	-----END PGP PUBLIC KEY BLOCK-----
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.0.1 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+	
+mQGiBDkHP3URBACkWGsYh43pkXU9wj/X1G67K8/DSrl85r7dNtHNfLL/ewil10k2
+q8saWJn26QZPsDVqdUJMOdHfJ6kQTAt9NzQbgcVrxLYNfgeBsvkHF/POtnYcZRgL
+tZ6syBBWs8JB4xt5V09iJSGAMPUQE8Jpdn2aRXPApdoDw179LM8Rq6r+gwCg5ZZa
+pGNlkgFu24WM5wC1zg4QTbMD/3MJCSxfL99Ek5HXcB3yhj+o0LmIrGAVBgoWdrRd
+BIGjQQFhV1NSwC8YhN/4nGHWpaTxgEtnb4CI1wI/G3DK9olYMyRJinkGJ6XYfP3b
+cCQmqATDF5ugIAmdditnw7deXqn/eavaMxRXJM/RQSgJJyVpbAO2OqKe6L6Inb5H
+kjcZA/9obTm499dDMRQ/CNR92fA5pr0zriy/ziLUow+cqI59nt+bEb9nY1mfmUN6
+SW0jCH+pIQH5lerV+EookyOyq3ocUdjeRYF/d2jl9xmeSyL2H3tDvnuE6vgqFU/N
+sdvby4B2Iku7S/h06W6GPQAe+pzdyX9vS+Pnf8osu7W3j60WprQkUGF1bCBHYWxs
+YWdoZXIgPHBhdWxnYWxsQHJlZGhhdC5jb20+iFYEExECABYFAjkHP3UECwoEAwMV
+AwIDFgIBAheAAAoJEJECmvGCPSWpMjQAoNF2zvRgdR/8or9pBhu95zeSnkb7AKCm
+/uXVS0a5KoN7J61/1vEwx11poLkBQdQ5Bz+MEAQA8ztcWRJjW8cHCgLaE402jyqQ
+37gDT/n4VS66nU+YItzDFScVmgMuFRzhibLblfO9TpZzxEbSF3T6p9hLLnHCQ1bD
+HRsKfh0eJYMMqB3+HyUpNeqCMEEd9AnWD9P4rQtO7Pes38sV0lX0OSvsTyMG9wEB
+vSNZk+Rl+phA55r1s8cAAwUEAJjqazvk0bgFrw1OPG9m7fEeDlvPSV6HSA0fvz4w
+c7ckfpuxg/URQNf3TJA00Acprk8Gg8J2CtebAyR/sP5IsrK5l1luGdk+l0M85FpT
+/cen2OdJtToAF/6fGnIkeCeP1O5aWTbDgdAUHBRykpdWU3GJ7NS6923fVg5khQWg
+uwrAiEYEGBECAAYFAjkHP4wACgkQkQKa8YI9JamliwCfXox/HjlorMKnQRJkeBcZ
+iLyPH1QAoI33Ft/0HBqLtqdtP4vWYQRbibjW
+=BMEc
+-----END PGP PUBLIC KEY BLOCK-----
 ```
 
 ### Spam Concerns
