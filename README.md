@@ -1,7 +1,7 @@
 Authoritative Key Server
 ========================
-`aks` is an implementation of an Authoritative PGP Key Server, using HKP Version 2, as outlined in [this blog post]() and further defined in the [Public API](#public-api).
-It is intended to be a demonstration of the concept of an Authoritative Key Server using updated REST principles.
+`aks` is an implementation of an Authoritative PGP Key Server, using HKP Version 2, as defined in the [Public API](#public-api).
+It is intended to be a demonstration of a working Authoritative Key Server using updated REST principles.
 
 Installation
 ------------
@@ -52,7 +52,7 @@ The public API for this Authoritative Key Server is available over HTTP and HTTP
 
 Although the above draft was never approved, HKP as referenced herein will be known as "version 2", as the API that AKS uses is substantially different from that outlined in the above draft and the implementations of Public Keyservers in the wild.
 
-HKP version 2 is an updated form of the protocol with an emphasis on REST principles, practical uses of Keyservers, and the usage of a Keyserver as an Authoritative Key Server. As such, it does not implement many of the same methods as HKP version 1, and the methods it does implement are done so in a substantially different way. HKP version 2 should be considered incompatible with version 1.
+HKP version 2 is an updated form of the protocol with an emphasis on REST principles, practical uses of Keyservers, and the usage of a Keyserver as an Authoritative Key Server. As such, it does not implement all of the same methods as HKP version 1, and the methods it does implement are done so in a substantially different way. HKP version 2 should be considered incompatible with version 1.
 
 Version 2's heavy emphasis on Authoritative Keyservers means that it is missing many features which might make it more amenable to uses such [SKS](https://bitbucket.org/skskeyserver/sks-keyserver/wiki/Home) which distribute keys to many servers at once.
 
@@ -162,27 +162,22 @@ Key Database Drivers
 
 AKS is implemented such that it is agnostic to how keys are stored/retrieved and interacts with any storage mechanism through a driver that implements the methods required by AKS.
 
-Two database drivers are included with this distribution:
-
-1. A [filesystem driver](drivers/fs.js) intended as a local demonstration of an AKS, and
-
+Two database drivers are included with this distribution:  
+1. A [filesystem driver](drivers/fs.js) intended as a local demonstration of an AKS, and  
 2. A [Mongo driver](drivers/mongo.js) intended as a basic MongodDB interface for an Authoritative Key Server.
 
 Compliant Key Database Drivers implement the following methods:
-* `findOne`
-
+* `findOne`  
 	The `findOne` method calls back with a single `key` object when supplied with a valid email address as the first parameter. The key object should have at least the following properties defined:
 	* `keytext` - The Public Key Block
 	* `uid` - The email address which uniquely identifies this key
 	* `user` - Portion of the email address prior to the `@`
 	* `domain` - The domain of the user (portion of the email address after the `@`)
 
-* `find`
-
+* `find`  
 	The find method should take the `domain` as an optional first parameter. If supplied, it should call back with an array of keys corresponding to users of the `domain`. If `domain` is admitted, it should call back with an array of keys for all users on the keyserver. The `key` objects in the array should have the same properties defined as for the `findOne` method with the exception of `keytext`.
 
-* `add`
-
+* `add`  
 	The `add` method should store a key object when supplied with an email address as the first parameter and the Public Key Block as the second parameter. While this method is not currently used by the Public API, it will likely be implemented in the near future.
 
 A [generic driver](drivers/generic.js) is included with this distribution as a starting point for future database drivers.
