@@ -147,7 +147,7 @@ iLyPH1QAoI33Ft/0HBqLtqdtP4vWYQRbibjW
 
 There are (legitimate) concerns that exposing all the users on a keyserver with a simple `GET` request, or all the users of a particular domain can lead to users who are published in this way to be targeted by spammers. Some Public Key Servers, such as the PGP Global Directory have attempted to combat this behavior by requiring users to solve a CAPTCHA before they are granted access to the API. However, since the philosophy of HKP version 2 is that machines, not humans, should be handling encryption, a CAPTCHA is decidely the wrong mechanism.
 
-HKP version 2 makes requests for all the users of a keyserver easier, but fundamentally presents the same opportunity for spammers. To combat this, individual implementations can choose to not make the Index methods accessible. The only method that is REQUIRED for HKP Version 2 is retrieving the public key for a single user. In AKS's implementation, the option `useIndex` can be set to false to disable these methods. In addition, implemenations may choose to use rate limits, API keys, or other methods to attempt to stop spammers from accessing the keyserver.
+HKP version 2 makes requests for all the users of a keyserver easier, but fundamentally presents the same opportunity for spammers. To combat this, individual implementations can choose to not make the Index methods accessible. The only method that is _required_ for HKP Version 2 is [retrieving the public key for a single user](#retrieving-a-users-public-key). In AKS's implementation, the option `useIndex` can be set to false to disable these methods. In addition, implemenations may choose to use rate limits, API keys, or other methods to attempt to stop spammers from accessing the keyserver.
 
 ### Multiple Users for a Single Key
 
@@ -163,19 +163,26 @@ Key Database Drivers
 AKS is implemented such that it is agnostic to how keys are stored/retrieved and interacts with any storage mechanism through a driver that implements the methods required by AKS.
 
 Two database drivers are included with this distribution:
+
 1. A [filesystem driver](drivers/fs.js) intended as a local demonstration of an AKS, and
+
 2. A [Mongo driver](drivers/mongo.js) intended as a basic MongodDB interface for an Authoritative Key Server.
 
 Compliant Key Database Drivers implement the following methods:
 * `findOne`
+
 	The `findOne` method calls back with a single `key` object when supplied with a valid email address as the first parameter. The key object should have at least the following properties defined:
 	* `keytext` - The Public Key Block
 	* `uid` - The email address which uniquely identifies this key
 	* `user` - Portion of the email address prior to the `@`
 	* `domain` - The domain of the user (portion of the email address after the `@`)
+
 * `find`
+
 	The find method should take the `domain` as an optional first parameter. If supplied, it should call back with an array of keys corresponding to users of the `domain`. If `domain` is admitted, it should call back with an array of keys for all users on the keyserver. The `key` objects in the array should have the same properties defined as for the `findOne` method with the exception of `keytext`.
+
 * `add`
+
 	The `add` method should store a key object when supplied with an email address as the first parameter and the Public Key Block as the second parameter. While this method is not currently used by the Public API, it will likely be implemented in the near future.
 
 A [generic driver](drivers/generic.js) is included with this distribution as a starting point for future database drivers.
