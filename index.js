@@ -5,6 +5,38 @@
 var utils = require('./utils');
 var express = require('express');
 
+/**
+ * HTTP error definitions - Code and Text
+ */
+var httpErrors = {
+	unsupported: {
+		code: 501,
+		text: "Not Implemented"
+	},
+	error: {
+		code: 500,
+		text: "Internal Server Error"
+	},
+	notFound: {
+		code: 404,
+		text: "Not Found"
+	},
+	badRequest: {
+		code: 400,
+		text: "Bad Request"
+	}
+};
+
+function httpError(error, res) {
+	var http = httpErrors[error];
+	if(!http) {
+		console.log("unknown error "+error);
+		http = httpErrors.error;
+	}
+	res.status(http.code);
+	res.end(http.text);
+}
+
 
 /**
  * Initalize the Key Server
@@ -12,10 +44,10 @@ var express = require('express');
  * @param {Object} options Options for the AKS instance
  */
 function AKS(db, options) {
-	var useIndex = options.useIndex || false,
+	var useIndex = options.useIndex || true,
 		trustProxy = options.trustProxy || false,
 		baseUri = options.baseUri || '/',
-		uri = baseUri + 'keys';
+		uri = baseUri + 'users';
 
 	var version = this.version = 2;
 
@@ -31,8 +63,7 @@ function AKS(db, options) {
 		if(!useIndex) {
 
 			// Index of all keys is unsupported
-			res.status(501);
-			res.send();
+			httpError('unsupported', res);
 			return;
 
 		}
@@ -41,8 +72,13 @@ function AKS(db, options) {
 		db.find(function(err, keys) {
 
 			if(err) {
-				res.status(500);
-				res.send(err);
+				console.log(err);
+				httpError('error', res);
+				return;
+			}
+
+			if(!keys) {
+				httpError('notFound', res);
 				return;
 			}
 
@@ -64,15 +100,14 @@ function AKS(db, options) {
 
 	});
 
-	this.app.get(uri + '/:domain', function(req, res) {
+	this.app.get(uri + '/:domain/', function(req, res) {
 
 		var domain = req.params.domain;
 
 		if(!useIndex) {
 
 			// Index of all keys is unsupported
-			res.status(501);
-			res.send();
+			httpError('unsupported', res);
 			return;
 
 		}
@@ -81,8 +116,13 @@ function AKS(db, options) {
 		db.find(domain, function(err, keys) {
 
 			if(err) {
-				res.status(500);
-				res.send(err);
+				console.log(err);
+				httpError('error', res);
+				return;
+			}
+
+			if(!keys) {
+				httpError('notFound', res);
 				return;
 			}
 
@@ -109,8 +149,7 @@ function AKS(db, options) {
 		var email = req.params.user + '@' + req.params.domain;
 
 		if(!utils.isValidEmail(email)) {
-			res.status(400);
-			res.send();
+			httpError('badRequest', res);
 			return;
 		}
 
@@ -118,19 +157,19 @@ function AKS(db, options) {
 		db.findOne(email, function(err, key) {
 
 			if(err) {
-				res.status(500);
-				res.send(err);
+				console.log(err);
+				httpError('error', res);
 				return;
 			}
 
 			if(!key || (key && !key.keytext)) {
-				res.status(404);
-				res.send();
+				httpError('notFound', res);
 				return;
 			}
 
+			res.setHeader('Content-Type', 'application/pgp-keys'); // as described in RFC-3156 (http://tools.ietf.org/html/rfc3156)
 			res.status(200);
-			res.send(key.keytext);
+			res.end(key.keytext);
 
 		});
 

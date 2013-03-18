@@ -77,7 +77,7 @@ MongoKDb.prototype.add = function(email, keytext, callback) {
 	var key = new this.model({
 		uid:email,
 		domain:domain,
-		user:user
+		user:user,
 		keytext:keytext
 	});
 
@@ -87,7 +87,7 @@ MongoKDb.prototype.add = function(email, keytext, callback) {
 			return;
 		}
 		callback(null, {
-			email: key.email,
+			uid: key.email,
 			keytext: key.keytext
 		});
 	});

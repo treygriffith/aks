@@ -1,6 +1,6 @@
 Authoritative Key Server
 ========================
-`aks` is an implementation of an Authoritative PGP Key Server, using HKP Version 2, as outlined in [this blog post]() and further defined in the [Public API]().
+`aks` is an implementation of an Authoritative PGP Key Server, using HKP Version 2, as outlined in [this blog post]() and further defined in the [Public API](#public-api).
 It is intended to be a demonstration of the concept of an Authoritative Key Server using updated REST principles.
 
 Installation
@@ -21,7 +21,7 @@ Usage
 
 `aks` can be run as a stand-alone web server or as an additional web server inside of a Node application. To create it, simply create an instance of `aks` and instruct it to listen on the proper port.
 
-It takes as a parameter a database driver that implements the methods described in [Key Database Drivers](). It ships with a MongoDB driver (on top of Mongoose) as well as a Filesystem driver, meant only for local dev use, not as a production server.
+It takes as a parameter a database driver that implements the methods described in [Key Database Drivers](#key-database-drivers). It ships with a MongoDB driver (on top of Mongoose) as well as a Filesystem driver, meant only for local dev use, not as a production server.
 
 	``` javascript
 	var aks = require('aks');
@@ -35,14 +35,14 @@ It takes as a parameter a database driver that implements the methods described 
 	server.listen(); // defaults to the typical HKP Port of 11371
 	```
 
-Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API]().
+Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API](#public-api).
 
 
 #### Server Options
 
 The optional second parameter when starting the AKS server is an object of options. The possible properties for the options object are:
 * `trustProxy` - If set to a truthy value, this tells AKS to trust a proxy which handles SSL connections by respecting the `X-Forwarded-Proto` header. [See the Express documentation of `trust proxy`](http://expressjs.com/api.html#app-settings) for more information. Defaults to false.
-* `useIndex` - If set to a truthy value, this tells AKS to ignore requests for multiple users, as outlined in [Spam Concerns](). Defaults to false.
+* `useIndex` - If set to a false-y value, this tells AKS to ignore requests for multiple users, as outlined in [Spam Concerns](#spam-concerns). Defaults to true.
 * `baseUri` - If set, this should a string, beginning and ending with a forward slash, that defines the base uri at which the key server listens for requests. This is to facillitate the key server co-existing with other services on a single server. Defaults to `/`.
 
 HKP Version 2
@@ -60,12 +60,12 @@ Version 2's heavy emphasis on Authoritative Keyservers means that it is missing 
 
 #### Retrieving all the users on a keyserver
 
-HKP version 1 defined the index of the keys as all of the individual keyid's. While technically true, for most use cases it is more helpful to have an index of users with keys, regardless of whether or not some of those users (again defined by unique email addresses) have the same key.
+HKP version 1 defined the index of the keys as all of the individual `keyid`'s. While technically true, for most use cases it is more helpful to have an index of users with keys, regardless of whether or not some of those users (again defined by unique email addresses) have the same key.
 
-HKP version 2 uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HKP protocol in use, in our case it is always `2`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
+HKP version 2 uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users/`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HKP protocol in use, in our case it is always `2`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
 
 	```
-	GET http://keys.example.com/users
+	GET http://keys.example.com/users/
 	```
 could return
 	```
@@ -91,7 +91,7 @@ Each `key` can optionally contain additional properties describing the key, incl
 As might be expected from the `path`s returned from index, it is possible to retrieve all the users for a particular domain by using the domain as a the endpoint. The JSON object returned is the same as for the index route, but the paths do not include the domain as they are relative to the current endpoint.
 
 	```
-	GET http://keys.example.com/users/example.com
+	GET http://keys.example.com/users/example.com/
 	```
 could return
 	```

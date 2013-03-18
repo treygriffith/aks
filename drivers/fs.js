@@ -27,7 +27,7 @@ FsKDb.prototype.findOne = function(email, callback) {
 	var parts = email.split('@'),
 		domain = parts[1],
 		user = parts[0],
-		keyPath = path.resolve(this.baseDir, domain, email);
+		keyPath = path.resolve(this.baseDir, domain, user);
 
 	fq.exists(keyPath, function(exists) {
 
@@ -75,7 +75,7 @@ FsKDb.prototype.find = function(domain, callback) {
 
 	var getUsers = function(domain, callback) {
 		// get all the users for the domain
-		fq.readdir(path.resovle(baseDir, domain), function(err, users) {
+		fq.readdir(path.resolve(baseDir, domain), function(err, users) {
 
 			if(err) {
 				callback(err);
@@ -99,14 +99,23 @@ FsKDb.prototype.find = function(domain, callback) {
 	};
 
 	if(domain) {
+		fq.exists(path.resolve(baseDir, domain), function(exists) {
 
-		// get only users for the defined domain
-		getUsers(domain, callback);
+			if(!exists) {
+				// no users for this domain
+				callback();
+				return;
+			}
+
+			// get only users for the defined domain
+			getUsers(domain, callback);
+
+		});
 		return;
 	}
 
 	// get all the domains stored in the directory
-	fq.readdir(baseDir, function(err, domains) {
+	fq.readdir(path.resolve(baseDir), function(err, domains) {
 
 		if(err) {
 			callback(err);
@@ -162,7 +171,12 @@ FsKDb.prototype.add = function(email, keytext, callback) {
 				return;
 			}
 
-			cb(null, {uid:email, user:user, domain:domain, keytext:keytext});
+			cb(null, {
+				uid:email,
+				user:user,
+				domain:domain,
+				keytext:keytext
+			});
 
 		});
 

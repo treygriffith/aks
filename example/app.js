@@ -6,4 +6,5 @@ var server = new aks.Server(fsKeyDatabase, {
 	trustProxy: true
 });
 
-server.listen(process.env.PORT || 11371);
+server.listen(process.env.PORT || 1337);
+console.log('Authoritative Key Server listening on port ' + (process.env.PORT || 1337));
