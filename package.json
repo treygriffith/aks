@@ -1,7 +1,7 @@
 {
   "name": "aks",
   "description": "Authoritative PGP Key Server",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": {
     "name": "Trey Griffith",
     "email": "trey.griffith@gmail.com"
