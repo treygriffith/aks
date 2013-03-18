@@ -15,9 +15,9 @@ function MongoKDb(url, collectionName) {
 	this.mongoose = mongoose.connect(url);
 	
 	var key = mongoose.Schema({
-		uid: mongoose.SchemaTypes.Email,
-		domain: String,
-		user: String,
+		uid: {type:mongoose.SchemaTypes.Email, index: {unique:true}},
+		domain: {type: String, index: 1},
+		user: {type: String, index: 1},
 		keytext: String
 	});
 
