@@ -1,6 +1,6 @@
 Authoritative Key Server
 ========================
-`aks` is an implementation of an Authoritative PGP Key Server, using HKP Version 2, as defined in the [Public API](#public-api).
+`aks` is an implementation of an Authoritative PGP Key Server, using HAKP, as defined in the [HTTP Authoritative Keyserver Protocol](#http-authoritative-keyserver-protocol).
 It is intended to be a demonstration of a working Authoritative Key Server using updated REST principles.
 
 Installation
@@ -45,24 +45,39 @@ The optional second parameter when starting the AKS server is an object of optio
 * `useIndex` - If set to a false-y value, this tells AKS to ignore requests for multiple users, as outlined in [Spam Concerns](#spam-concerns). Defaults to true.
 * `baseUri` - If set, this should a string, beginning and ending with a forward slash, that defines the base uri at which the key server listens for requests. This is to facillitate the key server co-existing with other services on a single server. Defaults to `/`.
 
-HKP Version 2
+HTTP Authoritative Keyserver Protocol
 -------------
 
-The public API for this Authoritative Key Server is available over HTTP and HTTPS. It uses a protocol known as HKP (HTTP Keyserver Procotol). [The IETF draft of this protocol](http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00) is the basis for much of the API, and it was itself based on earlier implementations of Keyservers, such as [Marc Horowitz's Public Key Server](http://www.mit.edu/afs/net.mit.edu/project/pks/thesis/paper/thesis.html). 
+The public API for this Authoritative Key Server is available over HTTP and HTTPS. It uses a protocol known as AKP (HTTP Authoritative Keyserver Procotol). [The IETF draft of this HTTP Keyserver Protocol](http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00) is the basis for much of the API, and it was itself based on earlier implementations of Keyservers, such as [Marc Horowitz's Public Key Server](http://www.mit.edu/afs/net.mit.edu/project/pks/thesis/paper/thesis.html). 
 
-Although the above draft was never approved, HKP as referenced herein will be known as "version 2", as the API that AKS uses is substantially different from that outlined in the above draft and the implementations of Public Keyservers in the wild.
+Although the above draft was never approved, HKP is the de facto standard for keyservers. HAKP is based on HKP, but uses a substantially different API, as its use case is very different.
 
-HKP version 2 is an updated form of the protocol with an emphasis on REST principles, practical uses of Keyservers, and the usage of a Keyserver as an Authoritative Key Server. As such, it does not implement all of the same methods as HKP version 1, and the methods it does implement are done so in a substantially different way. HKP version 2 should be considered incompatible with version 1.
+HAKP places an emphasis on REST principles, and the usage of a Keyserver as an Authoritative Key Server. As such, it does not implement all of the same methods as HKP, and the methods it does implement are done so in a substantially different way. HAKP should be considered incompatible with HKP.
 
-Version 2's heavy emphasis on Authoritative Keyservers means that it is missing many features which might make it more amenable to uses such [SKS](https://bitbucket.org/skskeyserver/sks-keyserver/wiki/Home) which distribute keys to many servers at once.
+However, due to the many benefits of HKP, including the use of existing technologies such as [SKS](https://bitbucket.org/skskeyserver/sks-keyserver/wiki/Home), the protocol is designed such that a server may use both HAKP and HKP, similar to the way in which a Domain Name Server and an Authoritative Domain Name server may be the same server.
+
+### SRV Records
+
+A Keyserver is designated as "Authoritative" for a domain, by adding a Service Record (SRV) to the DNS records for the domain. This means that all users of that domain that have PGP Keys will have the official version (up-to-date, valid, etc) located on the designated Authoritative Keyserver.
+
+The symbolic name for the Authoritative Keyserver is `hakp`, and the underlying protocol is `tcp`.
+
+An SRV Record might appear as follows:
+```
+_hakp._tcp.example.com 86400 IN SRV 0 5 80 keys.example.com.
+```
+
+Since Authoritative Keyservers are available over HTTP or HTTPS, the most common ports will be 80 and  443. However, the traditional HKP port of 11371 is also a likely choice.
+
+If the Keyserver acts as both a HKP Keyserver as well as a HAKP Keyserver, both services should be designated within the DNS records.
 
 ### Public API
 
 #### Retrieving all the users on a keyserver
 
-HKP version 1 defined the index of the keys as all of the individual `keyid`'s. While technically true, for most use cases it is more helpful to have an index of users with keys, regardless of whether or not some of those users (again defined by unique email addresses) have the same key.
+HKP defined the index of the keys as all of the individual `keyid`'s. While technically true, for use as an authoritative supplier of keys for users it is more helpful to have an index of users with keys, regardless of whether or not some of those users (again defined by unique email addresses) have the same key.
 
-HKP version 2 uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users/`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HKP protocol in use, in our case it is always `2`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
+HAKP uses this more practical definition of an index, which is retrieved by sending a `GET` request to `/users/`. The response is a JSON object, which has two properties: `version` and `keys`. `version` defines the version of the HAKP protocol in use, in our case it is always `1`. `keys` are an array of key objects, corresponding to all the unique users who have keys on this server. Each key object has a single property defined, `path`, which defines the relative path (not the absolute path) to the user's Public Key Block.
 
 ```
 GET http://keys.example.com/users/
@@ -70,7 +85,7 @@ GET http://keys.example.com/users/
 could return
 ```
 {
-	"version": 2,
+	"version": 1,
 	"keys": [
 		{
 			"path": "example.com/alice"
@@ -82,7 +97,7 @@ could return
 }
 ```
 
-HKP version 1 defined a variable, `mr` to designate whether a response should be machine-readable or human-readable. Since encryption is generally something better undertaken by machines than humans, HKP version 2 assumes all request to be machine-readable, but the responses are in formats (like JSON) that are also easily read by humans.
+HKP defined a variable, `mr` to designate whether a response should be machine-readable or human-readable. Since encryption is generally something better undertaken by machines than humans, HAKP assumes all request to be machine-readable, but the responses are in formats (like JSON) that are also easily read by humans.
 
 Each `key` can optionally contain additional properties describing the key, including the `keyid`, algorithm, etc., but the protocol only requires the `path` property.
 
@@ -96,7 +111,7 @@ GET http://keys.example.com/users/example.com/
 could return
 ```
 {
-	"version": 2,
+	"version": 1,
 	"keys": [
 		{
 			"path": "alice"
@@ -110,7 +125,7 @@ could return
 
 #### Retrieving a user's public key
 
-HKP version 1 relied on string searching to find the key id for a particular user, and then `GET`ing that key id to retrieve the Public Key Block. HKP version 2, by contrast does not support string searching, and instead returns the Public Key Block for a user (as defined by a unique email address) when sending a `GET` request to `/users/:domain/:user`. For example:
+HKP relied on string searching to find the key id for a particular user, and then `GET`ing that key id to retrieve the Public Key Block. HAKP, by contrast does not support string searching, and instead returns the Public Key Block for a user (as defined by a unique email address) when sending a `GET` request to `/users/:domain/:user`. For example:
 ```
 GET http://keys.example.com/users/example.com/alice
 ```
@@ -145,17 +160,17 @@ iLyPH1QAoI33Ft/0HBqLtqdtP4vWYQRbibjW
 
 ### Spam Concerns
 
-There are (legitimate) concerns that exposing all the users on a keyserver with a simple `GET` request, or all the users of a particular domain can lead to users who are published in this way to be targeted by spammers. Some Public Key Servers, such as the PGP Global Directory have attempted to combat this behavior by requiring users to solve a CAPTCHA before they are granted access to the API. However, since the philosophy of HKP version 2 is that machines, not humans, should be handling encryption, a CAPTCHA is decidely the wrong mechanism.
+There are (legitimate) concerns that exposing all the users on a keyserver with a simple `GET` request, or all the users of a particular domain can lead to users who are published in this way to be targeted by spammers. Some Public Key Servers, such as the PGP Global Directory have attempted to combat this behavior by requiring users to solve a CAPTCHA before they are granted access to the API. However, since the philosophy of HAKP is that machines, not humans, should be handling encryption, a CAPTCHA is decidely the wrong mechanism.
 
-HKP version 2 makes requests for all the users of a keyserver easier, but fundamentally presents the same opportunity for spammers. To combat this, individual implementations can choose to not make the Index methods accessible. The only method that is _required_ for HKP Version 2 is [retrieving the public key for a single user](#retrieving-a-users-public-key). In AKS's implementation, the option `useIndex` can be set to false to disable these methods. In addition, implemenations may choose to use rate limits, API keys, or other methods to attempt to stop spammers from accessing the keyserver.
+HAKP makes requests for all the users of a keyserver easier, but fundamentally presents the same opportunity for spammers. To combat this, individual implementations can choose to not make the Index methods accessible. The only method that is _required_ for HAKP is [retrieving the public key for a single user](#retrieving-a-users-public-key). In AKS's implementation, the option `useIndex` can be set to false to disable these methods. In addition, implemenations may choose to use rate limits, API keys, or other methods to attempt to stop spammers from accessing the keyserver.
 
 ### Multiple Users for a Single Key
 
-Multiple unique email addresses can be associated with a single PGP key. HKP version 1 approached the key as the fundamental unit, and listed all of the users for which the key was applicable. Since there are very few applications for which it would be useful to know all the users of a particular key, instead of the key for a particular user, HKP version 2 takes a fundamentally different approach.
+Multiple unique email addresses can be associated with a single PGP key. HKP approached the key as the fundamental unit, and listed all of the users for which the key was applicable. Since there are very few applications for which it would be useful to know all the users of a particular key, instead of the key for a particular user, HAKP takes a fundamentally different approach.
 
 However, one of the instances in which it would be useful to know all the users for a single key would be communicating with a large group that all shared a single PGP key. This scenario is one in which the members of the group corresponded about the shared group key ahead of time, and as a result, a Keyserver is not a necessity.
 
-If this scenario (or others like it) do turn out to be an important use for HKP version 2 Keyservers, the protocol can be expanded, perhaps through a `/groups` endpoint.
+If this scenario (or others like it) do turn out to be an important use for HAKP Keyservers, the protocol can be expanded, perhaps through a `/groups` endpoint.
 
 Key Database Drivers
 --------------------

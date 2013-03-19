@@ -49,7 +49,7 @@ function AKS(db, options) {
 		baseUri = options.baseUri || '/',
 		uri = baseUri + 'users';
 
-	var version = this.version = 2;
+	var version = this.version = 1;
 
 	this.db = db;
 	this.app = express();
