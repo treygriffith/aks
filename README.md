@@ -64,9 +64,12 @@ Compliant Key Database Drivers implement the following methods:
 	* `domain` - The domain of the user (portion of the email address after the `@`)
 
 * `find`  
-	The find method should take the `domain` as an optional first parameter. If supplied, it should call back with an array of keys corresponding to users of the `domain`. If `domain` is admitted, it should call back with an array of keys for all users on the keyserver. The `key` objects in the array should have the same properties defined as for the `findOne` method with the exception of `keytext`.
+	The find method should take the `domain` as an optional first parameter. If supplied, it should call back with an array of keys corresponding to users of the specified `domain`. If `domain` is omitted, it should call back with an array of keys for all users on the keyserver. Each `key` object in the array should have at least the following properties defined:
+	* `uid` - The email address which uniquely identifies this key
+	* `user` - Portion of the email address prior to the `@`
+	* `domain` - The domain of the user (portion of the email address after the `@`)
 
 * `add`  
-	The `add` method should store a key object when supplied with an email address as the first parameter and the Public Key Block as the second parameter. While this method is not currently used by the Public API, it will likely be implemented in the near future.
+	The `add` method should store a key object when supplied with an email address as the first parameter and the Public Key Block as the second parameter. This method is currently not implemented in the Public API, but is necessary for adding additional users to the key server.
 
 A [generic driver](drivers/generic.js) is included with this distribution as a starting point for future database drivers.
