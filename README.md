@@ -1,6 +1,6 @@
 Authoritative Key Server
 ========================
-`aks` is an implementation of an Authoritative PGP Key Server, using HAKP, as defined in the [HTTP Authoritative Keyserver Protocol](wiki/Protocol).
+`aks` is an implementation of an Authoritative PGP Key Server, using HAKP, as defined in the [HTTP Authoritative Keyserver Protocol](https://github.com/treygriffith/aks/wiki/Protocol).
 It is intended to be a demonstration of a working Authoritative Key Server using updated REST principles.
 
 Installation
@@ -35,14 +35,14 @@ var server = new aks.Server(mongoKeyDatabase);
 server.listen(); // defaults to the typical HKP Port of 11371
 ```
 
-Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API](wiki/Protocol#public-api).
+Once the Key Server is listening on a port, it will respond to requests formed in accordance with the [Public API](https://github.com/treygriffith/aks/wiki/Protocol#public-api).
 
 
 #### Server Options
 
 The optional second parameter when starting the AKS server is an object of options. The possible properties for the options object are:
 * `trustProxy` - If set to a truthy value, this tells AKS to trust a proxy which handles SSL connections by respecting the `X-Forwarded-Proto` header. [See the Express documentation of `trust proxy`](http://expressjs.com/api.html#app-settings) for more information. Defaults to false.
-* `useIndex` - If set to a false-y value, this tells AKS to ignore requests for multiple users, as outlined in [Spam Concerns](wiki/Protocol#spam-concerns). Defaults to true.
+* `useIndex` - If set to a false-y value, this tells AKS to ignore requests for multiple users, as outlined in [Spam Concerns](https://github.com/treygriffith/aks/wiki/Protocol#spam-concerns). Defaults to true.
 * `baseUri` - If set, this should a string, beginning and ending with a forward slash, that defines the base uri at which the key server listens for requests. This is to facillitate the key server co-existing with other services on a single server. Defaults to `/`.
 
 
