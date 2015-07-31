@@ -32,5 +32,6 @@
     "type": "git",
     "url": "git://github.com/treygriffith/aks.git"
   },
-  "homepage": "https://github.com/treygriffith/aks"
+  "homepage": "https://github.com/treygriffith/aks",
+  "license": "MIT"
 }
